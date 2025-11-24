@@ -1,28 +1,39 @@
-name: Build APK
+name   名字: Build APK (Docker)
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master" ]分支：["main"   “主要”, "master"   “主”]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   上运行:ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      # 1. 自动配置 Buildozer 环境
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+      # 1. 腾出空间 (防止打包一半磁盘满了)
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      # 2. 使用 Docker 进行打包 (最稳方案)
+      # 这会自动拉取一个配置完美的安卓打包环境
+      - name: Build with Buildozer-名称：Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1用途:ArtemSBulgakov / buildozer-action@v1
         id: buildozer
         with:
-          command: buildozer android debug
-          buildozer_version: master
+          command: buildozer android debug命令：buildozer android debug
+          buildozer_version: master   buildozer_version:主
+          workdir: .
 
-      # 2. 上传打包好的 APK
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      # 3. 上传结果
+      - name: Upload artifacts   —name：上传工件
+        uses: actions/upload-artifact@v4用途:行动/ upload-artifact@v4
         with:
-          name: package
-          path: bin/*.apk
+          name: package   名称:包
+          path: bin/*.apk   路径:bin / * . apk
